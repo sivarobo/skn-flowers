@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="ta">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#7a1f3d">
+<title>SKN பூ கணக்கு</title>
+<link rel="icon" href="logo.png">
+<style>
+@font-face{font-family:"Noto Sans Tamil";font-weight:400;font-display:swap;src:url(fonts/noto-sans-tamil-tamil-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Noto Sans Tamil";font-weight:600 700;font-display:swap;src:url(fonts/noto-sans-tamil-tamil-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Noto Sans";font-weight:400;font-display:swap;src:url(fonts/noto-sans-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Noto Sans";font-weight:600 700;font-display:swap;src:url(fonts/noto-sans-latin-700-normal.woff2) format("woff2")}
+:root{--brand:#7a1f3d;--brand2:#a8325a;--bg:#f6f2ef;--card:#fff;--ink:#231a1d;--mute:#6f6467;--line:#e6dcd8;--ok:#1f7a4a;--bad:#b3261e;--tint:#f8e9ee}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans Tamil","Noto Sans",system-ui,sans-serif;font-size:16px}
+button,input,select{font:inherit;color:inherit}
+.hidden{display:none!important}
+header{position:sticky;top:0;z-index:5;background:var(--brand);color:#fff;padding:10px 16px calc(10px);display:flex;align-items:center;gap:10px}
+header img{width:34px;height:34px;border-radius:8px;background:#fff}
+header h1{font-size:18px;margin:0;font-weight:700;flex:1}
+#sync{font-size:12px;padding:3px 8px;border-radius:20px;background:rgba(255,255,255,.18)}
+#sync.pending{background:#f3c24b;color:#3a2a00}
+main{padding:12px 16px 96px;max-width:640px;margin:0 auto}
+nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:6}
+nav button{flex:1;border:0;background:none;padding:10px 0 12px;font-size:14px;color:var(--mute);display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button .ic{font-size:20px;line-height:1}
+nav button.on{color:var(--brand);font-weight:700}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px}
+.row{display:flex;align-items:center;gap:8px}
+.grow{flex:1;min-width:0}
+.btn{border:0;border-radius:12px;padding:12px 16px;background:var(--brand);color:#fff;font-weight:600;font-size:16px}
+.btn.alt{background:var(--tint);color:var(--brand)}
+.btn.ghost{background:none;border:1px solid var(--line);color:var(--ink)}
+.btn.danger{background:none;border:1px solid var(--bad);color:var(--bad)}
+.btn.small{padding:8px 12px;font-size:14px}
+.btn:disabled{opacity:.5}
+input[type=text],input[type=number],input[type=tel],input[type=date],input[type=month],input[type=password],select{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff;font-size:17px}
+input:focus,select:focus{outline:2px solid var(--brand2);border-color:transparent}
+label.f{display:block;font-size:13px;color:var(--mute);margin:10px 0 4px}
+.datebar{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.datebar button{width:46px;height:46px;border-radius:12px;border:1px solid var(--line);background:#fff;font-size:20px}
+.datebar input{text-align:center;font-weight:600}
+.today{font-size:12px;color:var(--mute);text-align:center;margin:-6px 0 10px}
+.sum{display:flex;gap:8px;margin-bottom:12px}
+.sum div{flex:1;background:var(--tint);border-radius:12px;padding:8px 10px}
+.sum b{display:block;font-size:18px;color:var(--brand)}
+.sum span{font-size:12px;color:var(--mute)}
+.list .it{display:flex;align-items:center;gap:10px;padding:12px 4px;border-bottom:1px solid var(--line)}
+.list .it:last-child{border-bottom:0}
+.it .nm{font-weight:600}
+.it .sub{font-size:13px;color:var(--mute)}
+.it .amt{text-align:right;font-weight:600;white-space:nowrap}
+.it .amt small{display:block;font-weight:400;font-size:12px;color:var(--mute)}
+.pill{display:inline-block;font-size:12px;background:var(--tint);color:var(--brand);border-radius:20px;padding:1px 8px;margin-left:4px}
+.results{max-height:46vh;overflow:auto;margin-top:6px}
+.results .it{cursor:pointer}
+.empty{color:var(--mute);text-align:center;padding:18px 8px;font-size:14px}
+h2{font-size:17px;margin:4px 0 10px}
+.sheet-bg{position:fixed;inset:0;background:rgba(20,10,14,.45);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:#fff;width:100%;max-width:640px;border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));max-height:92vh;overflow:auto}
+.sheet h3{margin:0 0 2px;font-size:18px}
+.sheet .sub{color:var(--mute);font-size:14px}
+.big{font-size:22px;font-weight:700;color:var(--brand)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:#231a1d;color:#fff;padding:10px 16px;border-radius:12px;z-index:40;font-size:14px;max-width:90vw;text-align:center}
+#login{max-width:360px;margin:12vh auto 0;text-align:center;padding:0 16px}
+#login img{width:110px;height:110px}
+.previewwrap{overflow:hidden;border:1px solid var(--line);border-radius:10px;background:#fff;margin:10px 0}
+.progress{font-size:14px;color:var(--mute);margin-top:8px}
+/* ---- printable bill (A4 @96dpi = 794 x 1123) ---- */
+#billstage{position:fixed;left:-10000px;top:0}
+.bill{width:794px;height:1123px;background:#fff;color:#000;padding:70px 72px 0 72px;font-family:"Noto Sans","Noto Sans Tamil",sans-serif}
+.bill table{border-collapse:collapse;width:100%;table-layout:fixed}
+.bill td{border:1px solid #000;padding:0 4px;font-size:12px;font-weight:700;height:19px;line-height:17px;overflow:hidden;white-space:nowrap}
+.bill .logo{text-align:center;vertical-align:middle;padding:2px}
+.bill .logo img{width:104px;height:102px}
+.bill .ttl{text-align:center;height:58px;font-size:20px;vertical-align:bottom;padding-bottom:4px}
+.bill .ttl b{font-size:44px;letter-spacing:-1px;line-height:44px}
+.bill .c{text-align:center}
+.bill .r{text-align:right}
+.bill .ta{font-family:"Noto Sans Tamil",sans-serif;font-weight:400;font-size:13px}
+.bill .hd td{font-size:13px;text-align:center}
+.bill .hd .ta{font-size:14px}
+.bill .tot td{height:30px;vertical-align:bottom}
+.bill .lbl{font-family:"Noto Sans Tamil",sans-serif;font-size:13px;font-weight:600}
+.bill.compact td{height:16px;line-height:14px;font-size:11px}
+</style>
+</head>
+<body>
+
+<div id="login" class="hidden">
+  <img src="logo.png" alt="SKN">
+  <h2 style="margin-top:12px">SKN பூ கணக்கு</h2>
+  <p style="color:var(--mute);font-size:14px">உள்ளே செல்ல PIN எண்ணை அடிக்கவும்</p>
+  <input id="pinIn" type="password" inputmode="numeric" placeholder="PIN" style="text-align:center;font-size:22px;letter-spacing:6px">
+  <div id="pinErr" style="color:var(--bad);font-size:14px;min-height:22px;margin-top:6px"></div>
+  <button class="btn" style="width:100%" id="pinBtn">உள்ளே செல்</button>
+</div>
+
+<div id="app" class="hidden">
+<header>
+  <img src="logo.png" alt="">
+  <h1 id="hTitle">தினசரி பதிவு</h1>
+  <span id="sync">சேமிக்கப்பட்டது</span>
+</header>
+<main>
+  <!-- ENTRY -->
+  <section id="v-entry">
+    <div class="datebar">
+      <button id="dPrev" aria-label="முந்தைய நாள்">‹</button>
+      <input type="date" id="dIn">
+      <button id="dNext" aria-label="அடுத்த நாள்">›</button>
+    </div>
+    <div class="today" id="dLabel"></div>
+    <div class="card">
+      <input type="text" id="search" placeholder="விவசாயி பெயர் / ஊர் / பூ தேடு..." autocomplete="off">
+      <div class="results list" id="results"></div>
+    </div>
+    <div class="sum">
+      <div><b id="sKg">0</b><span>மொத்த கிலோ</span></div>
+      <div><b id="sAmt">₹0</b><span>மொத்த தொகை</span></div>
+      <div><b id="sCnt">0</b><span>பதிவுகள்</span></div>
+    </div>
+    <div class="card">
+      <h2>இந்த நாளின் பதிவுகள்</h2>
+      <div class="list" id="dayList"></div>
+    </div>
+  </section>
+
+  <!-- ACCOUNTS -->
+  <section id="v-acc" class="hidden">
+    <div class="row" style="margin-bottom:12px">
+      <input type="text" id="accSearch" class="grow" placeholder="தேடு..." autocomplete="off">
+      <button class="btn" id="accAdd">+ புதியது</button>
+    </div>
+    <div class="card"><div class="list" id="accList"></div></div>
+  </section>
+
+  <!-- BILLS -->
+  <section id="v-bill" class="hidden">
+    <label class="f">மாதம்</label>
+    <input type="month" id="mIn">
+    <div class="sum" style="margin-top:12px">
+      <div><b id="bKg">0</b><span>மொத்த கிலோ</span></div>
+      <div><b id="bAmt">₹0</b><span>மொத்த தொகை</span></div>
+      <div><b id="bCnt">0</b><span>பில்கள்</span></div>
+    </div>
+    <button class="btn alt" style="width:100%;margin-bottom:12px" id="allPdf">அனைத்து பில்களும் ஒரே PDF</button>
+    <div class="progress hidden" id="allProg"></div>
+    <input type="text" id="billSearch" placeholder="தேடு..." autocomplete="off" style="margin-bottom:12px">
+    <div class="card"><div class="list" id="billList"></div></div>
+  </section>
+
+  <!-- MORE -->
+  <section id="v-more" class="hidden">
+    <div class="card">
+      <h2>காப்பு (Backup)</h2>
+      <p style="font-size:14px;color:var(--mute);margin-top:0">எல்லா கணக்கு மற்றும் பதிவுகளையும் ஒரு file-ஆக phone-ல் சேமிக்கலாம்.</p>
+      <button class="btn alt" id="backupBtn">Backup பதிவிறக்கு</button>
+    </div>
+    <div class="card">
+      <h2>Backup-இலிருந்து மீட்டெடு</h2>
+      <p style="font-size:14px;color:var(--mute);margin-top:0">முன்பு எடுத்த backup file-ஐ தேர்ந்தெடுக்கவும். கவனம்: இப்போது உள்ள கணக்குகள் மாற்றப்படும்.</p>
+      <input type="file" id="restoreFile" accept=".json,application/json" class="hidden">
+      <button class="btn ghost" id="restoreBtn">Backup file தேர்ந்தெடு</button>
+      <div class="progress" id="restoreMsg"></div>
+    </div>
+    <div class="card">
+      <h2>வெளியேறு</h2>
+      <p style="font-size:14px;color:var(--mute);margin-top:0">இந்த phone-ல் இருந்து வெளியேறினால் மீண்டும் PIN கேட்கும்.</p>
+      <button class="btn danger" id="logoutBtn">வெளியேறு</button>
+    </div>
+    <p style="text-align:center;font-size:12px;color:var(--mute)">SKN Flowers Stall · பதிப்பு 1.0</p>
+  </section>
+</main>
+<nav>
+  <button data-v="entry" class="on"><span class="ic">✎</span>பதிவு</button>
+  <button data-v="acc"><span class="ic">☰</span>கணக்குகள்</button>
+  <button data-v="bill"><span class="ic">▤</span>பில்</button>
+  <button data-v="more"><span class="ic">⋯</span>மேலும்</button>
+</nav>
+</div>
+
+<div id="sheetHost"></div>
+<div id="billstage"></div>
+
+<script src="lib/html2canvas.min.js"></script>
+<script src="lib/jspdf.umd.min.js"></script>
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  del(k) { try { localStorage.removeItem(k); } catch {} }
+};
+const pad = n => String(n).padStart(2, "0");
+const ymd = d => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+const todayStr = () => ymd(new Date());
+const fmtD = s => s.slice(8, 10) + "-" + s.slice(5, 7) + "-" + s.slice(0, 4);
+const inr = (n, dec = 2) => Number(n || 0).toLocaleString("en-IN", { minimumFractionDigits: dec, maximumFractionDigits: dec });
+const kg = n => Number(n || 0).toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 3 });
+const round2 = n => Math.round(n * 100) / 100;
+const TA_DAYS = ["ஞாயிறு","திங்கள்","செவ்வாய்","புதன்","வியாழன்","வெள்ளி","சனி"];
+const TA_MON = ["ஜனவரி","பிப்ரவரி","மார்ச்","ஏப்ரல்","மே","ஜூன்","ஜூலை","ஆகஸ்ட்","செப்டம்பர்","அக்டோபர்","நவம்பர்","டிசம்பர்"];
+const monthName = m => TA_MON[+m.slice(5, 7) - 1] + " " + m.slice(0, 4);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+const S = {
+  pin: LS.get("skn_pin", ""),
+  accounts: LS.get("skn_accounts", []),
+  months: {},                       // m -> {accId: rows}
+  queue: LS.get("skn_queue", []),   // [{t:'m',m,acc}|{t:'a'}]
+  date: todayStr(),
+  billMonth: todayStr().slice(0, 7),
+  view: "entry"
+};
+
+function toast(msg, ms = 2200) {
+  const t = document.createElement("div"); t.className = "toast"; t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.remove(), ms);
+}
+
+/* ---------------- API + sync ---------------- */
+async function api(path, opts = {}) {
+  const r = await fetch("/api/" + path, { ...opts, headers: { "content-type": "application/json", "x-pin": S.pin } });
+  if (r.status === 401) { const e = new Error("pin"); e.code = 401; throw e; }
+  if (!r.ok) throw new Error("server " + r.status);
+  return r.json();
+}
+function cacheMonth(m) { LS.set("skn_m_" + m, S.months[m]); }
+function setSync(state) {
+  const el = $("#sync");
+  if (state === "pending") { el.textContent = "சேமிக்க காத்திருக்கிறது (" + S.queue.length + ")"; el.className = "pending"; }
+  else if (state === "saving") { el.textContent = "சேமிக்கிறது..."; el.className = ""; }
+  else { el.textContent = "சேமிக்கப்பட்டது"; el.className = ""; }
+}
+function enqueue(item) {
+  const key = item.t === "a" ? "a" : item.m + "/" + item.acc;
+  S.queue = S.queue.filter(q => (q.t === "a" ? "a" : q.m + "/" + q.acc) !== key);
+  S.queue.push(item); LS.set("skn_queue", S.queue);
+  flush();
+}
+let flushing = false;
+async function flush() {
+  if (flushing || !S.queue.length) { if (!S.queue.length) setSync("ok"); return; }
+  flushing = true; setSync("saving");
+  try {
+    while (S.queue.length) {
+      const q = S.queue[0];
+      if (q.t === "a") {
+        await api("accounts", { method: "PUT", body: JSON.stringify({ accounts: S.accounts }) });
+      } else {
+        const rows = (S.months[q.m] && S.months[q.m][q.acc]) || [];
+        await api("month?m=" + q.m + "&acc=" + encodeURIComponent(q.acc), { method: "PUT", body: JSON.stringify({ rows }) });
+      }
+      S.queue.shift(); LS.set("skn_queue", S.queue);
+    }
+    setSync("ok");
+  } catch (e) {
+    if (e.code === 401) return logout();
+    setSync("pending");
+  } finally { flushing = false; }
+}
+setInterval(flush, 20000);
+addEventListener("online", flush);
+
+async function loadMonth(m, force) {
+  if (S.months[m] && !force) return;
+  const cached = LS.get("skn_m_" + m, null);
+  if (cached) S.months[m] = cached;
+  try {
+    const d = await api("data?m=" + m);
+    const pendingAccs = new Set(S.queue.filter(q => q.t === "m" && q.m === m).map(q => q.acc));
+    const merged = d.rows || {};
+    if (S.months[m]) for (const a of pendingAccs) { if (S.months[m][a]) merged[a] = S.months[m][a]; else delete merged[a]; }
+    S.months[m] = merged; cacheMonth(m);
+    if (!S.queue.some(q => q.t === "a")) { S.accounts = d.accounts || []; LS.set("skn_accounts", S.accounts); }
+  } catch (e) {
+    if (e.code === 401) { logout(); throw e; }
+    if (!S.months[m]) S.months[m] = {};
+    toast("இணையம் இல்லை — பழைய தகவல் காட்டப்படுகிறது");
+  }
+}
+
+/* ---------------- helpers ---------------- */
+const accById = id => S.accounts.find(a => a.id === id);
+const sortedAccounts = () => [...S.accounts].sort((a, b) => (a.order || 0) - (b.order || 0));
+function rowsOf(m, acc) { return ((S.months[m] || {})[acc]) || []; }
+function setRows(m, acc, rows) {
+  S.months[m] = S.months[m] || {};
+  if (rows.length) S.months[m][acc] = rows; else delete S.months[m][acc];
+  cacheMonth(m); enqueue({ t: "m", m, acc });
+}
+function matches(a, q) {
+  if (!q) return true;
+  q = q.toLowerCase();
+  return (a.name + " " + a.addr + " " + a.flower + " " + (a.phone || "")).toLowerCase().includes(q);
+}
+function lastRateFor(acc, flower, date) {
+  const m = date.slice(0, 7), month = S.months[m] || {};
+  // same flower, same day (most recent entry wins)
+  let best = null;
+  for (const [aid, rows] of Object.entries(month)) {
+    const a = accById(aid); if (!a || a.flower !== flower) continue;
+    for (const r of rows) if (r.d === date && r.r) best = r.r;
+  }
+  if (best) return best;
+  const own = [...rowsOf(m, acc)].filter(r => r.r && r.d <= date).sort((x, y) => x.d < y.d ? -1 : 1);
+  return own.length ? own[own.length - 1].r : "";
+}
+
+/* ---------------- views ---------------- */
+const TITLES = { entry: "தினசரி பதிவு", acc: "கணக்குகள்", bill: "மாத பில்", more: "மேலும்" };
+function show(v) {
+  S.view = v;
+  for (const k of Object.keys(TITLES)) $("#v-" + k).classList.toggle("hidden", k !== v);
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.v === v));
+  $("#hTitle").textContent = TITLES[v];
+  if (v === "entry") renderEntry();
+  if (v === "acc") renderAccounts();
+  if (v === "bill") loadMonth(S.billMonth).then(renderBills);
+  scrollTo(0, 0);
+}
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => show(b.dataset.v));
+
+/* ---- entry ---- */
+async function setDate(d) {
+  S.date = d; $("#dIn").value = d;
+  const dt = new Date(d + "T00:00:00");
+  $("#dLabel").textContent = TA_DAYS[dt.getDay()] + (d === todayStr() ? " · இன்று" : "");
+  await loadMonth(d.slice(0, 7));
+  renderEntry();
+}
+$("#dIn").onchange = e => e.target.value && setDate(e.target.value);
+$("#dPrev").onclick = () => { const d = new Date(S.date + "T00:00:00"); d.setDate(d.getDate() - 1); setDate(ymd(d)); };
+$("#dNext").onclick = () => { const d = new Date(S.date + "T00:00:00"); d.setDate(d.getDate() + 1); setDate(ymd(d)); };
+$("#search").oninput = renderResults;
+
+function renderResults() {
+  const q = $("#search").value.trim();
+  const box = $("#results");
+  if (!q) { box.innerHTML = ""; return; }
+  const list = sortedAccounts().filter(a => matches(a, q)).slice(0, 40);
+  if (!S.accounts.length) { box.innerHTML = '<div class="empty">கணக்குகள் இல்லை. "மேலும்" பகுதியில் Backup மீட்டெடுக்கவும் அல்லது "கணக்குகள்" பகுதியில் புதிய கணக்கு சேர்க்கவும்.</div>'; return; }
+  if (!list.length) { box.innerHTML = '<div class="empty">கிடைக்கவில்லை. "கணக்குகள்" பகுதியில் புதிய கணக்கு சேர்க்கவும்.</div>'; return; }
+  const m = S.date.slice(0, 7);
+  box.innerHTML = list.map(a => {
+    const done = rowsOf(m, a.id).filter(r => r.d === S.date);
+    return `<div class="it" data-acc="${a.id}"><div class="grow"><div class="nm">${esc(a.name)} <span class="pill">${esc(a.flower)}</span></div><div class="sub">${esc(a.addr)}</div></div>${done.length ? '<div class="amt" style="color:var(--ok)">✓ ' + kg(done.reduce((s, r) => s + r.q, 0)) + ' கி</div>' : ""}</div>`;
+  }).join("");
+  box.querySelectorAll(".it").forEach(el => el.onclick = () => openEntry(el.dataset.acc));
+}
+
+function renderEntry() {
+  renderResults();
+  const m = S.date.slice(0, 7), month = S.months[m] || {};
+  const items = [];
+  for (const [aid, rows] of Object.entries(month)) for (const r of rows) if (r.d === S.date) items.push({ aid, r });
+  items.sort((x, y) => (y.r.t || 0) - (x.r.t || 0));
+  let tk = 0, ta = 0;
+  for (const { r } of items) { tk += r.q; ta += r.q * r.r; }
+  $("#sKg").textContent = kg(tk); $("#sAmt").textContent = "₹" + inr(ta, 0); $("#sCnt").textContent = items.length;
+  $("#dayList").innerHTML = items.length ? items.map(({ aid, r }) => {
+    const a = accById(aid) || { name: "?", flower: "", addr: "" };
+    return `<div class="it" data-acc="${aid}" data-id="${r.id}" style="cursor:pointer"><div class="grow"><div class="nm">${esc(a.name)} <span class="pill">${esc(a.flower)}</span></div><div class="sub">${kg(r.q)} கி × ₹${kg(r.r)}${r.n ? " · " + esc(r.n) : ""}</div></div><div class="amt">₹${inr(r.q * r.r)}</div></div>`;
+  }).join("") : '<div class="empty">இன்னும் பதிவு இல்லை. மேலே விவசாயி பெயரை தேடி பதிவு செய்யவும்.</div>';
+  $("#dayList").querySelectorAll(".it").forEach(el => el.onclick = () => openEntry(el.dataset.acc, el.dataset.id));
+}
+
+function closeSheet() { $("#sheetHost").innerHTML = ""; }
+function sheet(html) {
+  $("#sheetHost").innerHTML = `<div class="sheet-bg"><div class="sheet">${html}</div></div>`;
+  $("#sheetHost .sheet-bg").onclick = e => { if (e.target.classList.contains("sheet-bg")) closeSheet(); };
+  return $("#sheetHost .sheet");
+}
+
+function openEntry(accId, rowId) {
+  const a = accById(accId); if (!a) return;
+  const m = S.date.slice(0, 7);
+  const existing = rowId ? rowsOf(m, accId).find(r => r.id === rowId) : null;
+  const rate = existing ? existing.r : lastRateFor(accId, a.flower, S.date);
+  const el = sheet(`
+    <h3>${esc(a.name)} <span class="pill">${esc(a.flower)}</span></h3>
+    <div class="sub">${esc(a.addr)} · ${fmtD(S.date)}</div>
+    <div class="grid2">
+      <div><label class="f">கிலோ</label><input type="number" inputmode="decimal" step="0.001" id="eQ" value="${existing ? existing.q : ""}"></div>
+      <div><label class="f">விலை (₹ / கிலோ)</label><input type="number" inputmode="decimal" step="0.5" id="eR" value="${rate}"></div>
+    </div>
+    <label class="f">பைத்து / குறிப்பு (விருப்பம்)</label>
+    <input type="text" id="eN" placeholder="எ.கா. கவர் 260" value="${esc(existing ? existing.n || "" : "")}">
+    <div class="row" style="margin:14px 0"><span class="grow sub">தொகை</span><span class="big" id="eAmt">₹0.00</span></div>
+    <div class="row">
+      ${existing ? '<button class="btn danger" id="eDel">நீக்கு</button>' : ""}
+      <button class="btn ghost" id="eCancel">ரத்து</button>
+      <button class="btn grow" id="eSave">சேமி</button>
+    </div>
+    <div id="eErr" style="color:var(--bad);font-size:14px;margin-top:8px"></div>`);
+  const q = el.querySelector("#eQ"), r = el.querySelector("#eR"), n = el.querySelector("#eN");
+  const upd = () => { el.querySelector("#eAmt").textContent = "₹" + inr((+q.value || 0) * (+r.value || 0)); el.querySelector("#eErr").textContent = ""; };
+  q.oninput = upd; r.oninput = upd; upd();
+  setTimeout(() => q.focus(), 60);
+  el.querySelector("#eCancel").onclick = closeSheet;
+  const save = () => {
+    const qv = parseFloat(q.value), rv = parseFloat(r.value);
+    if (!(qv > 0) && !n.value.trim()) { el.querySelector("#eErr").textContent = "கிலோ அளவை உள்ளிடவும்"; q.focus(); return; }
+    if (qv > 0 && !(rv >= 0) ) { el.querySelector("#eErr").textContent = "விலையை உள்ளிடவும்"; r.focus(); return; }
+    const rows = [...rowsOf(m, accId)];
+    const rec = { id: existing ? existing.id : uid(), d: S.date, q: qv > 0 ? Math.round(qv * 1000) / 1000 : 0, r: rv >= 0 ? rv : 0, t: existing && existing.t ? existing.t : Date.now() };
+    if (n.value.trim()) rec.n = n.value.trim();
+    const i = rows.findIndex(x => x.id === rec.id);
+    if (i >= 0) rows[i] = rec; else rows.push(rec);
+    rows.sort((x, y) => x.d < y.d ? -1 : x.d > y.d ? 1 : (x.t || 0) - (y.t || 0));
+    setRows(m, accId, rows);
+    closeSheet(); toast(a.name + " — " + kg(rec.q) + " கி சேமிக்கப்பட்டது");
+    $("#search").value = ""; renderEntry(); $("#search").focus();
+  };
+  el.querySelector("#eSave").onclick = save;
+  [q, r, n].forEach(i => i.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); if (i === q) r.focus(); else save(); } });
+  if (existing) el.querySelector("#eDel").onclick = () => {
+    if (!confirm("இந்த பதிவை நீக்கவா?")) return;
+    setRows(m, accId, rowsOf(m, accId).filter(x => x.id !== existing.id));
+    closeSheet(); toast("நீக்கப்பட்டது"); renderEntry();
+  };
+}
+
+/* ---- accounts ---- */
+$("#accSearch").oninput = renderAccounts;
+function renderAccounts() {
+  const q = $("#accSearch").value.trim();
+  const list = sortedAccounts().filter(a => matches(a, q));
+  $("#accList").innerHTML = list.length ? list.map(a => `<div class="it" data-acc="${a.id}" style="cursor:pointer"><div class="grow"><div class="nm">${esc(a.name)} <span class="pill">${esc(a.flower)}</span></div><div class="sub">${esc(a.addr)}${a.phone ? " · " + esc(a.phone) : ""}</div></div><div class="amt">${a.baaki ? "₹" + inr(a.baaki, 0) + "<small>பாக்கி</small>" : ""}</div></div>`).join("")
+    : '<div class="empty">கணக்கு இல்லை</div>';
+  $("#accList").querySelectorAll(".it").forEach(el => el.onclick = () => openAccount(el.dataset.acc));
+}
+$("#accAdd").onclick = () => openAccount(null);
+function openAccount(id) {
+  const a = id ? accById(id) : { name: "", addr: "", flower: "", baaki: 0, phone: "" };
+  const flowers = [...new Set(S.accounts.map(x => x.flower).filter(Boolean))].sort();
+  const places = [...new Set(S.accounts.map(x => x.addr).filter(Boolean))].sort();
+  const el = sheet(`
+    <h3>${id ? "கணக்கு மாற்று" : "புதிய கணக்கு"}</h3>
+    <div class="sub">ஒரு விவசாயி பல பூ கொடுத்தால், ஒவ்வொரு பூவுக்கும் தனி கணக்கு உருவாக்கவும்.</div>
+    <label class="f">விவசாயி பெயர்</label><input type="text" id="aN" value="${esc(a.name)}">
+    <label class="f">ஊர் (Address)</label><input type="text" id="aA" list="dlP" value="${esc(a.addr)}">
+    <label class="f">பூ</label><input type="text" id="aF" list="dlF" value="${esc(a.flower)}">
+    <div class="grid2">
+      <div><label class="f">பாக்கி (₹)</label><input type="number" inputmode="decimal" id="aB" value="${a.baaki || ""}"></div>
+      <div><label class="f">Phone</label><input type="tel" id="aP" value="${esc(a.phone || "")}"></div>
+    </div>
+    <datalist id="dlF">${flowers.map(f => `<option value="${esc(f)}">`).join("")}</datalist>
+    <datalist id="dlP">${places.map(f => `<option value="${esc(f)}">`).join("")}</datalist>
+    <div class="row" style="margin-top:16px">
+      ${id ? '<button class="btn danger" id="aDel">நீக்கு</button>' : ""}
+      <button class="btn ghost" id="aCancel">ரத்து</button>
+      <button class="btn grow" id="aSave">சேமி</button>
+    </div>
+    <div id="aErr" style="color:var(--bad);font-size:14px;margin-top:8px"></div>`);
+  el.querySelector("#aCancel").onclick = closeSheet;
+  el.querySelector("#aSave").onclick = () => {
+    const name = el.querySelector("#aN").value.trim(), flower = el.querySelector("#aF").value.trim();
+    if (!name) { el.querySelector("#aErr").textContent = "பெயரை உள்ளிடவும்"; return; }
+    if (!flower) { el.querySelector("#aErr").textContent = "பூ பெயரை உள்ளிடவும்"; return; }
+    const rec = { ...a, name, flower, addr: el.querySelector("#aA").value.trim(), baaki: parseFloat(el.querySelector("#aB").value) || 0, phone: el.querySelector("#aP").value.trim() };
+    if (id) S.accounts = S.accounts.map(x => x.id === id ? rec : x);
+    else { rec.id = "a" + uid(); rec.order = Math.max(0, ...S.accounts.map(x => x.order || 0)) + 1; S.accounts.push(rec); }
+    LS.set("skn_accounts", S.accounts); enqueue({ t: "a" });
+    closeSheet(); toast("சேமிக்கப்பட்டது"); renderAccounts();
+  };
+  if (id) el.querySelector("#aDel").onclick = () => {
+    const used = Object.values(S.months).some(mm => mm && mm[id] && mm[id].length);
+    if (used) { el.querySelector("#aErr").textContent = "இந்த கணக்கில் பதிவுகள் உள்ளன. முதலில் அவற்றை நீக்கவும்."; return; }
+    if (!confirm(a.name + " கணக்கை நீக்கவா?")) return;
+    S.accounts = S.accounts.filter(x => x.id !== id); LS.set("skn_accounts", S.accounts); enqueue({ t: "a" });
+    closeSheet(); toast("நீக்கப்பட்டது"); renderAccounts();
+  };
+}
+
+/* ---- bills ---- */
+$("#mIn").onchange = async e => { if (!e.target.value) return; S.billMonth = e.target.value; await loadMonth(S.billMonth); renderBills(); };
+$("#billSearch").oninput = () => renderBills();
+function accTotals(m, id) { const rows = rowsOf(m, id); let k = 0, t = 0; for (const r of rows) { k += r.q; t += r.q * r.r; } return { k, t, n: rows.length }; }
+function billAccounts(m) { return sortedAccounts().filter(a => rowsOf(m, a.id).length); }
+function renderBills() {
+  const m = S.billMonth, q = $("#billSearch").value.trim();
+  $("#mIn").value = m;
+  const all = billAccounts(m);
+  let K = 0, T = 0; for (const a of all) { const x = accTotals(m, a.id); K += x.k; T += x.t; }
+  $("#bKg").textContent = kg(Math.round(K)); $("#bAmt").textContent = "₹" + inr(T, 0); $("#bCnt").textContent = all.length;
+  const list = all.filter(a => matches(a, q));
+  $("#billList").innerHTML = list.length ? list.map(a => { const x = accTotals(m, a.id); return `<div class="it" data-acc="${a.id}" style="cursor:pointer"><div class="grow"><div class="nm">${esc(a.name)} <span class="pill">${esc(a.flower)}</span></div><div class="sub">${esc(a.addr)} · ${kg(x.k)} கி · ${x.n} பதிவு</div></div><div class="amt">₹${inr(x.t)}</div></div>`; }).join("")
+    : '<div class="empty">' + monthName(m) + ' மாதத்திற்கு பதிவுகள் இல்லை</div>';
+  $("#billList").querySelectorAll(".it").forEach(el => el.onclick = () => openBill(el.dataset.acc));
+}
+
+function billHTML(a, m) {
+  const rows = rowsOf(m, a.id);
+  const [y, mo] = m.split("-").map(Number);
+  const days = new Date(y, mo, 0).getDate();
+  const byDay = {};
+  for (const r of rows) (byDay[r.d] = byDay[r.d] || []).push(r);
+  const lines = [];
+  for (let d = 1; d <= days; d++) {
+    const ds = m + "-" + pad(d);
+    const list = byDay[ds];
+    if (!list) lines.push({ d: ds });
+    else for (const r of list) lines.push({ d: ds, r });
+  }
+  // entries outside the month's day range never happen, but keep any stray rows
+  let total = 0;
+  const body = lines.map(({ d, r }) => {
+    if (!r) return `<tr><td class="r">${fmtD(d)}</td><td></td><td></td><td></td><td></td></tr>`;
+    const amt = r.q * r.r; total += amt;
+    return `<tr><td class="r">${fmtD(d)}</td><td class="r">${r.q ? r.q.toFixed(3) : ""}</td><td class="r">${r.r ? kg(r.r) : ""}</td><td class="r">${r.q ? inr(amt) : ""}</td><td class="ta">${esc(r.n || "")}</td></tr>`;
+  }).join("");
+  const compact = lines.length > 34 ? " compact" : "";
+  return `<div class="bill${compact}"><table>
+    <colgroup><col style="width:19.3%"><col style="width:19.5%"><col style="width:19.2%"><col style="width:16%"><col style="width:26%"></colgroup>
+    <tr><td rowspan="4" class="logo"><img src="logo.png" alt=""></td><td colspan="4" class="ttl"><b>SKN</b> FLOWERS STALL</td></tr>
+    <tr><td colspan="4" class="c">Wholesale Flower Merchant</td></tr>
+    <tr><td colspan="4" class="c">MP BUILDING, VAZHAPPADI &amp; VOC MARKET, SALEM</td></tr>
+    <tr><td colspan="4" class="r">Cell: 9677445119</td></tr>
+    <tr><td>Customer Name:</td><td colspan="2" class="c ta" style="font-weight:600">${esc(a.name)}</td><td class="c lbl">பாக்கி</td><td class="r">${a.baaki ? inr(a.baaki, 0) : ""}</td></tr>
+    <tr><td>Address:</td><td colspan="2" class="c ta">${esc(a.addr)}</td><td></td><td></td></tr>
+    <tr><td>Flower</td><td colspan="2" class="c ta">${esc(a.flower)}</td><td></td><td></td></tr>
+    <tr class="hd"><td class="ta">தேதி</td><td>Qty <span class="ta">(கிலோ)</span></td><td><span class="ta">விலை</span> / RATE</td><td class="ta">தொகை</td><td class="ta">பைத்து</td></tr>
+    ${body}
+    <tr><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr class="tot"><td></td><td></td><td></td><td class="r">${inr(total)}</td><td></td></tr>
+    <tr class="tot"><td class="lbl">கமிஷன்</td><td></td><td></td><td></td><td></td></tr>
+    <tr class="tot"><td class="lbl">கேட்</td><td></td><td></td><td></td><td></td></tr>
+  </table></div>`;
+}
+
+async function fontsReady() {
+  try { await Promise.all([document.fonts.load('700 16px "Noto Sans"'), document.fonts.load('400 16px "Noto Sans Tamil"'), document.fonts.load('600 16px "Noto Sans Tamil"')]); await document.fonts.ready; } catch {}
+}
+async function renderBillCanvas(a, m) {
+  const stage = $("#billstage");
+  stage.innerHTML = billHTML(a, m);
+  const img = stage.querySelector("img");
+  if (!img.complete) await new Promise(r => { img.onload = img.onerror = r; });
+  await fontsReady();
+  const c = await html2canvas(stage.firstElementChild, { scale: 2, backgroundColor: "#ffffff", useCORS: true, logging: false });
+  stage.innerHTML = "";
+  return c;
+}
+function newPdf() { return new jspdf.jsPDF({ unit: "mm", format: "a4", orientation: "portrait", compress: true }); }
+function addCanvas(pdf, c) { pdf.addImage(c.toDataURL("image/jpeg", 0.9), "JPEG", 0, 0, 210, 297, undefined, "FAST"); }
+const fileName = (a, m) => ("SKN_" + a.name + "_" + a.flower + "_" + m + ".pdf").replace(/[\\/:*?"<>|\s]+/g, "_");
+
+async function deliver(pdf, name, share) {
+  const blob = pdf.output("blob");
+  const file = new File([blob], name, { type: "application/pdf" });
+  if (share && navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: name }); return; } catch (e) { if (e.name === "AbortError") return; }
+  }
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a"); link.href = url; link.download = name;
+  document.body.appendChild(link); link.click(); link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
+}
+
+function openBill(id) {
+  const a = accById(id), m = S.billMonth;
+  const x = accTotals(m, id);
+  const el = sheet(`
+    <h3>${esc(a.name)} <span class="pill">${esc(a.flower)}</span></h3>
+    <div class="sub">${monthName(m)} · ${kg(x.k)} கி · ₹${inr(x.t)}</div>
+    <div class="previewwrap" id="pv"></div>
+    <div class="row">
+      <button class="btn ghost" id="bClose">மூடு</button>
+      <button class="btn alt grow" id="bShare">பகிர் (WhatsApp)</button>
+      <button class="btn grow" id="bPdf">PDF</button>
+    </div>
+    <div class="progress" id="bMsg"></div>`);
+  const pv = el.querySelector("#pv");
+  const w = pv.clientWidth || 340, sc = w / 794;
+  pv.style.height = Math.round(1123 * sc) + "px";
+  pv.innerHTML = `<div style="transform:scale(${sc});transform-origin:0 0;width:794px">${billHTML(a, m)}</div>`;
+  el.querySelector("#bClose").onclick = closeSheet;
+  const go = async share => {
+    const btns = el.querySelectorAll("button"); btns.forEach(b => b.disabled = true);
+    el.querySelector("#bMsg").textContent = "PDF தயாராகிறது...";
+    try {
+      const pdf = newPdf(); addCanvas(pdf, await renderBillCanvas(a, m));
+      await deliver(pdf, fileName(a, m), share);
+      el.querySelector("#bMsg").textContent = "";
+    } catch (e) { console.error(e); el.querySelector("#bMsg").textContent = "PDF உருவாக்க முடியவில்லை: " + e.message; }
+    btns.forEach(b => b.disabled = false);
+  };
+  el.querySelector("#bPdf").onclick = () => go(false);
+  el.querySelector("#bShare").onclick = () => go(true);
+}
+
+$("#allPdf").onclick = async () => {
+  const m = S.billMonth, list = billAccounts(m);
+  if (!list.length) return toast("பதிவுகள் இல்லை");
+  const btn = $("#allPdf"), prog = $("#allProg");
+  btn.disabled = true; prog.classList.remove("hidden");
+  try {
+    const pdf = newPdf();
+    for (let i = 0; i < list.length; i++) {
+      prog.textContent = `PDF தயாராகிறது... ${i + 1} / ${list.length} (${list[i].name})`;
+      if (i) pdf.addPage();
+      addCanvas(pdf, await renderBillCanvas(list[i], m));
+    }
+    await deliver(pdf, "SKN_அனைத்து_பில்கள்_" + m + ".pdf", false);
+    prog.textContent = list.length + " பில்கள் தயார்";
+  } catch (e) { console.error(e); prog.textContent = "PDF உருவாக்க முடியவில்லை: " + e.message; }
+  btn.disabled = false;
+};
+
+/* ---- more ---- */
+$("#backupBtn").onclick = async () => {
+  try {
+    const d = await api("backup");
+    const blob = new Blob([JSON.stringify(d)], { type: "application/json" });
+    const url = URL.createObjectURL(blob), link = document.createElement("a");
+    link.href = url; link.download = "SKN_backup_" + todayStr() + ".json"; link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+  } catch (e) { toast("Backup எடுக்க இணையம் தேவை"); }
+};
+$("#restoreBtn").onclick = () => $("#restoreFile").click();
+$("#restoreFile").onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  const msg = $("#restoreMsg");
+  let d;
+  try { d = JSON.parse(await f.text()); } catch { msg.textContent = "இது சரியான backup file இல்லை"; return; }
+  if (!Array.isArray(d.accounts) || !d.months || typeof d.months !== "object") { msg.textContent = "இது சரியான backup file இல்லை"; return; }
+  const nm = Object.keys(d.months).length;
+  if (!confirm(d.accounts.length + " கணக்குகள், " + nm + " மாத பதிவுகள் மீட்டெடுக்கவா? இப்போது உள்ள தகவல் மாற்றப்படும்.")) return;
+  msg.textContent = "மீட்டெடுக்கிறது...";
+  try {
+    await api("restore", { method: "PUT", body: JSON.stringify({ accounts: d.accounts, months: d.months }) });
+    S.queue = []; LS.set("skn_queue", []);
+    try { Object.keys(localStorage).filter(k => k.startsWith("skn_m_")).forEach(k => localStorage.removeItem(k)); } catch {}
+    S.months = {}; S.accounts = d.accounts; LS.set("skn_accounts", S.accounts);
+    msg.textContent = d.accounts.length + " கணக்குகள் மீட்டெடுக்கப்பட்டன ✓";
+    await loadMonth(S.date.slice(0, 7), true);
+  } catch (err) { msg.textContent = err.code === 401 ? "PIN தவறு" : "மீட்டெடுக்க முடியவில்லை — இணையத்தை சரிபார்க்கவும்"; }
+};
+$("#logoutBtn").onclick = () => { if (S.queue.length && !confirm("சேமிக்காத பதிவுகள் உள்ளன. வெளியேறவா?")) return; logout(); };
+function logout() { S.pin = ""; LS.del("skn_pin"); $("#app").classList.add("hidden"); $("#login").classList.remove("hidden"); }
+
+/* ---- login / boot ---- */
+async function tryLogin() {
+  const v = $("#pinIn").value.trim(); if (!v) return;
+  S.pin = v; $("#pinErr").textContent = ""; $("#pinBtn").disabled = true;
+  try { await api("login"); LS.set("skn_pin", v); await boot(); }
+  catch (e) { $("#pinErr").textContent = e.code === 401 ? "தவறான PIN" : "இணையம் இல்லை, மீண்டும் முயற்சிக்கவும்"; S.pin = ""; }
+  $("#pinBtn").disabled = false;
+}
+$("#pinBtn").onclick = tryLogin;
+$("#pinIn").onkeydown = e => { if (e.key === "Enter") tryLogin(); };
+
+async function boot() {
+  $("#login").classList.add("hidden"); $("#app").classList.remove("hidden");
+  await setDate(S.date);
+  flush();
+}
+if (S.pin) boot().catch(() => {}); else $("#login").classList.remove("hidden");
+</script>
+</body>
+</html>
