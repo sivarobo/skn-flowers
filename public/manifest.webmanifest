@@ -1,0 +1,17 @@
+{
+  "name": "SKN பூ கணக்கு",
+  "short_name": "SKN பூ கணக்கு",
+  "description": "SKN Flowers Stall — தினசரி பூ பதிவு மற்றும் மாத பில்",
+  "lang": "ta",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f6f2ef",
+  "theme_color": "#7a1f3d",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

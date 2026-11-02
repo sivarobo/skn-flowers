@@ -6,6 +6,11 @@
 <meta name="theme-color" content="#7a1f3d">
 <title>SKN பூ கணக்கு</title>
 <link rel="icon" href="logo.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="SKN பூ கணக்கு">
 <style>
 @font-face{font-family:"Noto Sans Tamil";font-weight:400;font-display:swap;src:url(fonts/noto-sans-tamil-tamil-400-normal.woff2) format("woff2")}
 @font-face{font-family:"Noto Sans Tamil";font-weight:600 700;font-display:swap;src:url(fonts/noto-sans-tamil-tamil-600-normal.woff2) format("woff2")}
@@ -116,6 +121,11 @@ h2{font-size:17px;margin:4px 0 10px}
 <main>
   <!-- ENTRY -->
   <section id="v-entry">
+    <div class="card row hidden" id="installBanner" style="background:var(--tint);border-color:transparent">
+      <span class="grow" style="font-size:14px">இந்த app-ஐ phone-ல் install செய்யலாம்</span>
+      <button class="btn small installBtn">Install</button>
+      <button class="btn small ghost" id="installLater" aria-label="மூடு">✕</button>
+    </div>
     <div class="datebar">
       <button id="dPrev" aria-label="முந்தைய நாள்">‹</button>
       <input type="date" id="dIn">
@@ -163,6 +173,11 @@ h2{font-size:17px;margin:4px 0 10px}
 
   <!-- MORE -->
   <section id="v-more" class="hidden">
+    <div class="card">
+      <h2>Phone-ல் install செய்</h2>
+      <p style="font-size:14px;color:var(--mute);margin-top:0" id="installHelp">Chrome மெனு (⋮) → "Install app" அல்லது "Add to Home screen" கொடுக்கவும்.</p>
+      <button class="btn installBtn hidden">Install செய்</button>
+    </div>
     <div class="card">
       <h2>காப்பு (Backup)</h2>
       <p style="font-size:14px;color:var(--mute);margin-top:0">எல்லா கணக்கு மற்றும் பதிவுகளையும் ஒரு file-ஆக phone-ல் சேமிக்கலாம்.</p>
@@ -647,6 +662,27 @@ $("#restoreFile").onchange = async e => {
 };
 $("#logoutBtn").onclick = () => { if (S.queue.length && !confirm("சேமிக்காத பதிவுகள் உள்ளன. வெளியேறவா?")) return; logout(); };
 function logout() { S.pin = ""; LS.del("skn_pin"); $("#app").classList.add("hidden"); $("#login").classList.remove("hidden"); }
+
+/* ---- install (PWA) ---- */
+let installEvt = null;
+const isStandalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+function refreshInstallUI() {
+  const can = !!installEvt && !isStandalone();
+  document.querySelectorAll(".installBtn").forEach(b => b.classList.toggle("hidden", !can));
+  $("#installBanner").classList.toggle("hidden", !can || LS.get("skn_install_later", false));
+  if (isStandalone()) $("#installHelp").textContent = "இந்த phone-ல் app ஏற்கனவே install செய்யப்பட்டுள்ளது ✓";
+}
+addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; refreshInstallUI(); });
+addEventListener("appinstalled", () => { installEvt = null; toast("App install ஆனது ✓"); refreshInstallUI(); });
+document.querySelectorAll(".installBtn").forEach(b => b.onclick = async () => {
+  if (!installEvt) return;
+  installEvt.prompt();
+  try { await installEvt.userChoice; } catch {}
+  installEvt = null; refreshInstallUI();
+});
+$("#installLater").onclick = () => { LS.set("skn_install_later", true); refreshInstallUI(); };
+if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
+refreshInstallUI();
 
 /* ---- login / boot ---- */
 async function tryLogin() {
