@@ -46,7 +46,10 @@ input:focus,select:focus{outline:2px solid var(--brand2);border-color:transparen
 label.f{display:block;font-size:13px;color:var(--mute);margin:10px 0 4px}
 .datebar{display:flex;align-items:center;gap:8px;margin-bottom:12px}
 .datebar button{width:46px;height:46px;border-radius:12px;border:1px solid var(--line);background:#fff;font-size:20px}
-.datebar input{text-align:center;font-weight:600}
+.pickbox{position:relative;flex:1;display:flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 14px;border:1px solid var(--line);border-radius:12px;background:#fff;font-size:18px;font-weight:600}
+.pickbox .cal{color:var(--mute);font-size:14px;margin-left:auto}
+.datebar .pickbox .cal{margin-left:0}
+.pickbox input{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;padding:0;cursor:pointer}
 .today{font-size:12px;color:var(--mute);text-align:center;margin:-6px 0 10px}
 .sum{display:flex;gap:8px;margin-bottom:12px}
 .sum div{flex:1;background:var(--tint);border-radius:12px;padding:8px 10px}
@@ -128,7 +131,7 @@ h2{font-size:17px;margin:4px 0 10px}
     </div>
     <div class="datebar">
       <button id="dPrev" aria-label="முந்தைய நாள்">‹</button>
-      <input type="date" id="dIn">
+      <div class="pickbox"><span id="dShow"></span><span class="cal">▾</span><input type="date" id="dIn" aria-label="தேதி"></div>
       <button id="dNext" aria-label="அடுத்த நாள்">›</button>
     </div>
     <div class="today" id="dLabel"></div>
@@ -159,7 +162,7 @@ h2{font-size:17px;margin:4px 0 10px}
   <!-- BILLS -->
   <section id="v-bill" class="hidden">
     <label class="f">மாதம்</label>
-    <input type="month" id="mIn">
+    <div class="pickbox" style="justify-content:flex-start"><span id="mShow"></span><span class="cal">▾</span><input type="month" id="mIn" aria-label="மாதம்"></div>
     <div class="sum" style="margin-top:12px">
       <div><b id="bKg">0</b><span>மொத்த கிலோ</span></div>
       <div><b id="bAmt">₹0</b><span>மொத்த தொகை</span></div>
@@ -346,7 +349,7 @@ document.querySelectorAll("nav button").forEach(b => b.onclick = () => show(b.da
 
 /* ---- entry ---- */
 async function setDate(d) {
-  S.date = d; $("#dIn").value = d;
+  S.date = d; $("#dIn").value = d; $("#dShow").textContent = fmtD(d);
   const dt = new Date(d + "T00:00:00");
   $("#dLabel").textContent = TA_DAYS[dt.getDay()] + (d === todayStr() ? " · இன்று" : "");
   await loadMonth(d.slice(0, 7));
@@ -503,7 +506,7 @@ function accTotals(m, id) { const rows = rowsOf(m, id); let k = 0, t = 0; for (c
 function billAccounts(m) { return sortedAccounts().filter(a => rowsOf(m, a.id).length); }
 function renderBills() {
   const m = S.billMonth, q = $("#billSearch").value.trim();
-  $("#mIn").value = m;
+  $("#mIn").value = m; $("#mShow").textContent = monthName(m);
   const all = billAccounts(m);
   let K = 0, T = 0; for (const a of all) { const x = accTotals(m, a.id); K += x.k; T += x.t; }
   $("#bKg").textContent = kg(Math.round(K)); $("#bAmt").textContent = "₹" + inr(T, 0); $("#bCnt").textContent = all.length;
